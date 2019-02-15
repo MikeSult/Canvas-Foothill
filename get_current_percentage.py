@@ -53,7 +53,7 @@ def create_message(name, percent):
     message += "In reviewing your overall test scores, I see that your cumulative total is at {:.2f}%."
     message += "  I want to give you a chance to get back on track towards a better grade."
     message += "  I'm going open up test XXX.  If you have questions about the topics or any other issues, "
-    message += "please communicate with via inbox at Canvas or email (mikesult@guitarland.com)"
+    message += "please communicate with me via inbox at Canvas or email (mikesult@guitarland.com)"
     message += "\n\nAlso if you haven't already read it, please see "
     message += "<a href='https://www.guitarland.com/Music10/Mus10discussion.html'>Discussion about the Tests</a>."
     message += "  It gives some strategies for answering the specific test questions for each test."
