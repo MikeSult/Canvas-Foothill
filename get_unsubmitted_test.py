@@ -16,7 +16,8 @@ import json
 now = datetime.datetime.utcnow()
 
 # ---------- load user specific data from json file ------------------
-with open('./my_info.json') as data:
+path = "../../HTML/CanvasAPI/"
+with open(path+'my_info.json') as data:
   my_data = json.load(data)
   
 API_URL = my_data['API_URL']
