@@ -1,5 +1,5 @@
 # 
-# cd ~/Documents/HTML/CanvasAPI/
+# cd ~/Documents/Github/Canvas-Foothill/
 # python get_current_percentage.py
 #
 # this script will scan all of the tests and make a report
@@ -14,9 +14,12 @@ import re
 import json
 
 now = datetime.datetime.utcnow()
+start_time = datetime.datetime.utcnow()
+start = time.time()
 
 # ---------- load user specific data from json file ------------------
-with open('./my_info.json') as data:
+path = "../../HTML/CanvasAPI/"
+with open(path+'my_info.json') as data:
   my_data = json.load(data)
   
 API_URL = my_data['API_URL']
@@ -89,6 +92,23 @@ header = ("\n===================================================================
 print(header.format(course.name, str(now)))
 
 assignments = course.get_assignments()
+current_assignments = []
+current_ids_scores = []
+one_id_score = []
+for assignment in assignments:
+    if 'Test' in assignment.name or 'Midterm' in assignment.name or "Final" in assignment.name or 'Foothill College Academic Integrity Pledge' in assignment.name:
+        overdue_date = create_date_from_str(assignment.due_at)
+        lock_date = create_date_from_str(assignment.lock_at)
+
+        if now < lock_date:
+            continue
+        current_assignments.append(assignment)
+        one_id_score.append(assignment.id)
+        one_id_score.append(assignment.points_possible)
+        one_id_score.append(assignment.name)
+        current_ids_scores.append(one_id_score)
+        one_id_score = []
+
 users = course.get_users(enrollment_type=['student'])
 
 total_points_possible = 0
@@ -97,31 +117,25 @@ student_report = ''
 messages_to_students = []
 found_submission = False
 count = 0
+num_actions = 0
 for user in users:
+    num_actions += 1
     student_report = "\n---------------------------\n"
-    for assignment in assignments:
-        if 'Test' in assignment.name or 'Midterm' in assignment.name or "Final" in assignment.name or 'Foothill College Academic Integrity Pledge' in assignment.name:
-            overdue_date = create_date_from_str(assignment.due_at)
-            lock_date = create_date_from_str(assignment.lock_at)
 
-            if now < lock_date:
-                continue
-            
-            total_points_possible += assignment.points_possible
+    for id_score_name in current_ids_scores:
+        num_actions += 1
+        total_points_possible += id_score_name[1]
 
-            test_submissions = assignment.get_submissions()
-            
-            for submission in test_submissions:
-                if submission.body == None:
-                    continue
-                if(submission.user_id == user.id):
-                    found_submission = True
-                    one_users_points += submission.score
-                    student_report += assignment.name+": Score = "+str(submission.score)+"/"+str(assignment.points_possible)+"\n"
-                
+        submission = course.get_assignment(id_score_name[0]).get_submission(user.id)
+        if submission.score == None:
+            found_submission = False
+        else:
+            found_submission = True
+            one_users_points += submission.score
+            student_report += id_score_name[2]+": Score = "+str(submission.score)+"/"+str(id_score_name[1])+"\n"
 
-            if(not found_submission):
-                student_report += assignment.name+": Score = 0/"+str(assignment.points_possible)+" (not submitted)\n"
+        if(not found_submission):
+            student_report += id_score_name[2]+": Score = 0/"+str(assignment.points_possible)+" (not submitted)\n"
             
         found_submission = False
 
@@ -135,7 +149,14 @@ for user in users:
 
 print("------------------------------------")
 print("This class has {} students".format(str(count)))
+print("This script makes {} actions".format(str(num_actions)))
 print("------------------------------------")
 for msg in messages_to_students:
    print(msg)
+
+stop_time = datetime.datetime.utcnow()
+time_difference = stop_time - start_time
+end = time.time()
+time_diff = end - start
+print("This script takes {} \n{}".format(str(time_difference), time_diff))
         
